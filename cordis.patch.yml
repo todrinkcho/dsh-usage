@@ -1,0 +1,14 @@
+# Bundle patch for @todrink/dsh-usage.
+# The profile install also adds the same row through its user patch layer; the
+# two are equivalent. Keep the row id and package name unique.
+- insert:
+    - id: usage-stats
+      name: '@todrink/dsh-usage'
+      config:
+        budgetCny: 100
+        budgetPeriod: month
+        includeSubagents: true
+        timelineDays: 30
+        refreshSeconds: 30
+        # Production defaults: no debug output and no dev watcher.
+        devReload: false

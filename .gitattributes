@@ -1,0 +1,7 @@
+# 统一用 LF 存进仓库：Windows 检出时靠 core.autocrlf 还原，macOS/Linux 直接可用。
+* text=auto eol=lf
+*.ps1 text eol=crlf
+*.png binary
+*.ico binary
+*.wav binary
+*.zip binary

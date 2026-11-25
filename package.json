@@ -1,0 +1,63 @@
+{
+  "name": "@todrink/dsh-usage",
+  "version": "1.3.4",
+  "type": "module",
+  "description": "Real session token usage, this month per-model share, estimated cost, budget and CPU monitor for the DSH Web UI",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "cordis.patch.yml",
+    "locale/*.json",
+    "icon.svg",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18",
+    "dsh": ">=0.2.2-rc.5"
+  },
+  "keywords": [
+    "deepseek-harness",
+    "dsh",
+    "dsh-plugin",
+    "dsh-bundle",
+    "usage",
+    "tokens",
+    "cost",
+    "budget",
+    "monitor",
+    "dashboard"
+  ],
+  "license": "MIT",
+  "author": {
+    "name": "todrink",
+    "url": "https://github.com/todrinkcho"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/todrinkcho/dsh-usage.git"
+  },
+  "homepage": "https://github.com/todrinkcho/dsh-usage#readme",
+  "bugs": {
+    "url": "https://github.com/todrinkcho/dsh-usage/issues"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-conversation",
+        "@deepseek-ai/dsh-client-ui-layout"
+      ]
+    }
+  }
+}
