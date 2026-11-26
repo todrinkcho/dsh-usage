@@ -1,6 +1,6 @@
 # 用量与成本 · Usage & Cost
 
-基于 DSH 本机真实会话日志的统计插件：总 token 消耗、所选时间范围内每个「提供商 × 模型」的用量与占比、会话数量、按 token 用量估算的成本与预算、token 消耗时间线、各会话用量与成本。
+基于 DSH 真实会话日志的统计插件：总 token 消耗、所选时间范围内每个「提供商 × 模型」的用量与占比、会话数量、按 token 用量估算的成本与预算、token 消耗时间线、各会话用量与成本。
 
 插件由两半组成：
 
@@ -20,22 +20,18 @@
   - 页脚：数据来源、计价说明、统计时间、告警（如有）。
 - 明/暗主题均使用宿主主题 token；看板字号整体按 1.12 倍放大（CSS 内绝对 px，最小 10.1px）；390px 宽移动端可用；支持 `prefers-reduced-motion`；Esc/背景点击关闭。
 
-## 安装（本机已安装）
+## 安装
 
-插件以本地 bundle 形式安装在 `desktop` profile 中：
-
-```powershell
-$dsh = "C:\Users\<user>\AppData\Local\Programs\DeepSeek Harness\resources\runtime\cli\bin\dsh.cmd"
-& $dsh plugin --profile desktop add "C:\Users\<user>\Documents\deepseek-harness\default-workspace\plugins\usage-stats"
+```bash
+# 图形界面：侧栏 插件 → 添加插件 → 填 @todrink/dsh-usage
+# 或者让 agent 调 plugin_manager → install_bundle → @todrink/dsh-usage
+# 或者命令行
+dsh plugin --profile <profile> add @todrink/dsh-usage
 ```
 
-该命令会通过 pnpm 链接本目录、加入 profile 的 bundle 列表，并由运行中的 Harness 通过 HMR 热加载，无需重启。卸载：
+装完重启 DSH。它的 host 半区要读 `$DSH_HOME` 下的会话日志，所以**必须装在跑着会话的那个 profile 里**，否则看板是空的。
 
-```powershell
-& $dsh plugin --profile desktop remove @todrink/dsh-usage
-```
-
-> 插件是 `link:` 到本目录的；修改这里的文件后，看板客户端代码需要一次页面刷新（开发时可打开下方 `devReload`）。
+本地开发时可以用 `dsh plugin --profile <profile> add <本包目录>` 做成 `link:`，改源码即时生效；此时改完 `client.js` 需要一次页面刷新（开发时可打开下方 `devReload`）。
 
 ## 配置
 
@@ -91,8 +87,7 @@ Host 在 `ctx.webServer` 上注册带鉴权的前缀路由 `/usage-stats`（复�
 
 ## 验证
 
-- 模型占比：`_verify/model-share.test.mjs`（`node _verify/model-share.test.mjs`）在 vm 里加载真实 `client.js`，用最小 React 替身渲染 `ModelShareCard`，覆盖 zh/en 词条键一致与范围归一化、3 天窗口剔除 10 天前的模型、放宽到 30 天又出现、提供商标签与完整模型名、9+1 合并、占比合计 100%、饼图扇区覆盖整圈、悬停提示含提供商/token/成本、Token/成本切换、空范围、旧宿主回退、跨卡片同一模型同色、Dashboard 早退后不得再调 hook 共 12 组断言，全部 PASS。
-- 模型占比的 Host 侧口径：`_verify/host-models.mjs` 用真实 `index.js` 起一个最小 Cordis 宿主，走自己的 `/usage-stats/overview` 路由读本机会话日志，校验每个桶都有 `provider`、逐日桶合计等于时间线同日 token/事件数、逐日成本与时间线一致、3/7/14/30 天窗口都非空。2026-11-23 实测 23 天有数据：近 3 天 1,038,215,358 token / ¥84.27、近 7 天 1,560,253,134 / ¥132.09、近 14 天 3,004,660,977 / ¥253.16、全部 3,813,029,670 / ¥314.65，PASS。
-- 独立 oracle 实现（另行解压日志并重算）逐会话/逐日比对为 **PASS**：稳定会话 token 与成本完全一致，实时增长中的会话差值由快照时间差解释。见 `_verify/compare-report.txt`。
-- 真实运行页面截图（明/暗/390px 移动端）、14 项交互回归（范围切换、排序、搜索、会话明细、预算编辑、Esc 关闭等）均通过，控制台无错误、无横向溢出。见 `_verify/shots/`。
+- 模型占比：`_verify/model-share.test.mjs`（`node _verify/model-share.test.mjs`）在 vm 里加载真实 `client.js`，用最小 React 替身渲染 `ModelShareCard`，覆盖 zh/en 词条键一致与范围归一化、窗口裁剪与放宽、提供商标签与完整模型名、9+1 合并、占比合计 100%、饼图扇区覆盖整圈、悬停提示内容、Token/成本切换、空范围、旧宿主回退、跨卡片同色、Dashboard 早退后不得再调 hook 等断言。
+- 模型占比的 Host 侧口径：`_verify/host-models.mjs` 用真实 `index.js` 起一个最小 Cordis 宿主，走自己的 `/usage-stats/overview` 路由读会话日志，校验每个桶都有 `provider`、逐日桶合计等于时间线同日 token/事件数、逐日成本与时间线一致、3/7/14/30 天窗口都非空。
+- 独立 oracle 实现（另行解压日志并重算）逐会话/逐日比对：稳定会话 token 与成本一致，实时增长中的会话差值由快照时间差解释。
 - 交付配置已关闭 `debugFile`/`devReload`，运行时不会向工作区写任何统计快照。
